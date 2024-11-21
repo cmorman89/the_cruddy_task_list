@@ -18,8 +18,8 @@ class Task:
     """Responsible for holding task-related information such as an ID, title, due date, etc.
 
     Attributes:
-        _task_id (int): The unique ID of the task, automatically generated using
-            `TaskID.generate()`.
+        task_id (int): The unique ID of the task, automatically generated using
+            `TaskID.generate()` during instantiation. Immutable once set.
         title (str): A short title or description of the task.
         description (Optional[str], optional): A longer description of the task details. Defaults
             to None.
@@ -27,6 +27,9 @@ class Task:
             "Completed". Defaults to "Pending".
         due_date (Optional[datetime], optional): The due date of the task. Defaults to the current
             date/time.
+
+    Methods:
+        _validate_status: Validate the status field to ensure it is one of the allowed status options.
     """
 
     def __init__(
@@ -36,7 +39,7 @@ class Task:
         due_date: Optional[datetime] = None,
         status: Optional[str] = None,
     ):
-        """Constructs a task with requested args and ensures it has a valid ID, status, and due
+        """Construct a task with requested args and ensures it has a valid ID, status, and due
         date.
 
         Args:
@@ -44,14 +47,14 @@ class Task:
             description (Optional[str], optional): A longer description of the task details.
                 Defaults to None.
             due_date (Optional[datetime], optional): The due date of the task. Defaults to None.
-        status (str): The current status of the task. Must be set as "Pending", "In Progress", or
-            "Completed". Defaults to None.
+            status (str): The current status of the task. Must be set as "Pending", "In Progress",
+                or "Completed". Defaults to "Pending".
         """
         self._task_id = TaskID.generate()
         self.title = title
         self.description = description
-        self.status = status if status else "Pending"
         self.due_date = due_date if due_date else datetime.now()
+        self.status = status
 
     @property
     def task_id(self) -> int:
@@ -61,3 +64,51 @@ class Task:
             int: The ID number of this task.
         """
         return self._task_id
+
+    @property
+    def status(self) -> str:
+        """Gets the task's status.
+
+        Returns:
+            str: The task's status.
+        """
+        return self._status
+
+    @status.setter
+    def status(self, new_status: str):
+        """Set the task status if valid, or prints an error and sets as "Pending" if invalid.
+
+        Args:
+            new_status (str): The unvalidated new status for the task.
+        """
+        try:
+            self._status = self._validate_status(new_status)
+        except ValueError as status_error:
+            print(f"{status_error}")
+            self._status = "Pending"
+
+    @staticmethod
+    def _validate_status(new_status: str) -> str:
+        """Validate the status field to ensure it is one of the allowed status options.
+
+        Args:
+            new_status (str): The new status to validate and return.
+
+        Raises:
+            ValueError: If the `new_status` is not in `valid_statuses`.
+
+        Returns:
+            str: The validated task status.
+        """
+        valid_statuses = ["Pending", "In Progress", "Completed"]
+        new_status = "(empty)" if not new_status else new_status
+        if new_status.lower() in map(str.lower, valid_statuses):
+            return next(
+                status
+                for status in valid_statuses
+                if status.lower() == new_status.lower()
+            )
+        else:
+            raise ValueError(
+                f"Unable to set status to {new_status}. Valid options are {valid_statuses}."
+            )

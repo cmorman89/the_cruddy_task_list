@@ -55,3 +55,27 @@ def test_task_id_immutable():
         assert False
     except:
         assert True
+
+
+@pytest.mark.parametrize(
+    "status, exp_status",
+    [
+        (None, "Pending"),
+        ("Pending", "Pending"),
+        ("Completed", "Completed"),
+        ("In Progress", "In Progress"),
+        ("Pending".lower(), "Pending"),
+        ("Completed".lower(), "Completed"),
+        ("In Progress".lower(), "In Progress"),
+        ("Pending".upper(), "Pending"),
+        ("Completed".upper(), "Completed"),
+        ("In Progress".upper(), "In Progress"),
+        ("", "Pending"),
+        ("Finished", "Pending"),
+        ("Incomplete", "Pending"),
+    ],
+)
+def test_task_status_setter(status, exp_status):
+    """Test valid and invalid statuses, as well as edge cases and string case handling"""
+    task = Task(title="Title", status=status)
+    assert task.status == exp_status
