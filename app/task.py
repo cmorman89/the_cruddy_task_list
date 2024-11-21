@@ -29,7 +29,8 @@ class Task:
             date/time.
 
     Methods:
-        _validate_status: Validate the status field to ensure it is one of the allowed status options.
+        _validate_status: Validate the status field to ensure it is one of the allowed status
+            options.
     """
 
     def __init__(
@@ -37,7 +38,7 @@ class Task:
         title: str,
         description: Optional[str] = None,
         due_date: Optional[datetime] = None,
-        status: Optional[str] = None,
+        status: Optional[str] = "Pending",
     ):
         """Construct a task with requested args and ensures it has a valid ID, status, and due
         date.
@@ -50,11 +51,11 @@ class Task:
             status (str): The current status of the task. Must be set as "Pending", "In Progress",
                 or "Completed". Defaults to "Pending".
         """
-        self._task_id = TaskID.generate()
-        self.title = title
-        self.description = description
-        self.due_date = due_date if due_date else datetime.now()
-        self.status = status
+        self._task_id: int = TaskID.generate()
+        self.title: str = title
+        self.description: Optional[str] = description
+        self.due_date: datetime = due_date if due_date else datetime.now()
+        self.status: str = status
 
     @property
     def task_id(self) -> int:

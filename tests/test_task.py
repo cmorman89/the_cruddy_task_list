@@ -52,8 +52,7 @@ def test_task_id_immutable():
     task = Task("task")
     try:
         task.task_id = 1
-        assert False
-    except:
+    except AttributeError:
         assert True
 
 
