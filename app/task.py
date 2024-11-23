@@ -118,7 +118,7 @@ class Task:
         """Return a user-friendly string representation of the task.
 
         The string includes the task's title and ID in the format:
-        "<title>  (ID #<task_id>)".
+        "<title> (ID #<task_id>)".
 
         Returns:
             str: A readable representation of the task.
