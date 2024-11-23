@@ -88,7 +88,7 @@ class TaskManager:
         else:
             raise AddDuplicateTaskError(task)
 
-    def get_task(self, task_id: int) -> Optional[Task]:
+    def get_task(self, task_id: int) -> Task:
         """Fetch a `Task` object from the task list using its unique `task_id` value.
 
         Args:
@@ -100,7 +100,7 @@ class TaskManager:
                 task manager's list.
 
         Returns:
-            Optional[Task]: The matching `Task` object.
+            Task: The matching `Task` object.
         """
         if self.task_list:
             try:
