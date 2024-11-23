@@ -6,14 +6,14 @@ Responsible for CRUD operations required to create and manage list of `Task` obj
 Classes:
     TaskManager: Handle CRUD operations for `Task` objects and keep a list of tasks.
     TaskManagerError(Exception): Base exception for Task Manager errors.
-    EmptyTaskListerror(TaskManagerError): Raise when trying to perform operations on an empty task
+    EmptyTaskListError(TaskManagerError): Raise when trying to perform operations on an empty task
         list.
     TaskNotFoundError(TaskManagerError): Raise when a specific task is not found in the task list.
     AddDuplicateTaskError(TaskManagerError): Raise when trying to add a task already present in the
         task list.
 """
 
-from typing import Optional, List
+from typing import Optional, List, Union
 
 from app.task import Task
 
@@ -116,30 +116,60 @@ class TaskManager:
         """
         return self.task_list
 
-    def delete_task(self, task_id: int):
+    def delete_task(self, task: Union[int, Task]):
         """Delete a `Task` from the task list if it is present.
 
         Args:
-            task_id (int): The `task_id` of the `Task` object to locate and remove.
+            task (Union[int, Task]): Either the `task_id` of the `Task` to locate and remove
+                                    or the `Task` object itself.
 
         Raises:
             EmptyTaskListError: if the task_list is empty.
             TaskNotFoundError: if a `Task` with a matching `task_id` value is not found in the
                 task manager's list.
         """
+        task_id = task if isinstance(task, int) else task.task_id
         if self.task_list:
             task = self.get_task(task_id=task_id)
             self.task_list.remove(task)
         else:
-            raise EmptyTaskListError(method_name="`delete_task()`")
+            raise EmptyTaskListError(method_name=f"`delete_task()` for `task_id` == {task_id}")
 
     def __str__(self):
-        """Produces a simple, printable task list."""
-        repr = "Task List:\n"
+        """Return a user-friendly string representation of the task.
+
+        The string includes task position in the list, the task titles, and their task_ids in the
+        following format:
+            Task List:
+            1.    <Task string>
+            2.    <Task string>
+            3.    ...
+
+        An empty list returns :
+            Task List:
+            - No tasks in the task list.
+
+        Returns:
+            str: A brief representation of the task manager/task list.
+        """
+        list_str = "Task List:\n"
         if self.task_list:
             for i, task in enumerate(self.get_all_tasks()):
-                repr += f"  {i + 1}.\t{task.title}  (ID#{task.task_id})\n"
+                list_str += f"  {i + 1}.\t{task}\n"
         else:
-            repr += "  - No tasks in the task list.\n"
+            list_str += "  - No tasks in the task list.\n"
+        return list_str
 
-        return repr
+    def __repr__(self):
+        """Return a string representation of all tasks and their attributes present in the list.
+
+        The string includes the complete task list and child task attributes in the format:
+            <TaskManager: task_list=[<Task: ...>, <Task: ...>]>
+
+        Returns:
+            str: A complete representation of the task manager/task list.
+        """
+        task_list = []
+        for task in self.get_all_tasks():
+            task_list.append(f"{task!r}")
+        return f"<TaskManager: task_list={task_list}>"
