@@ -113,3 +113,32 @@ class Task:
             raise ValueError(
                 f"Unable to set status to {new_status}. Valid options are {valid_statuses}."
             )
+
+    def __str__(self):
+        """Return a user-friendly string representation of the task.
+
+        The string includes the task's title and ID in the format:
+        "<title>  (ID #<task_id>)".
+
+        Returns:
+            str: A readable representation of the task.
+        """
+        return f"{self.title} (ID #{self.task_id})"
+
+    def __repr__(self):
+        """Return a string representation of the task with a complete list of its attributes.
+
+        The string includes the task's title and ID in the format:
+        <Task: task_id="<task_id>", title="<task_title>", description="<description>",
+        due_date=<due_date>, status="<status>">
+
+        Returns:
+            str: A complete representation of the task.
+        """
+        return (
+            f'<Task: task_id="{self.task_id}", '
+            f'title="{self.title}", '
+            f'description="{self.description}", '
+            f"due_date={self.due_date.strftime("%Y-%m-%d %H:%M")}, "
+            f'status="{self.status}">'
+        )

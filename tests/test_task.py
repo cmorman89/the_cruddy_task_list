@@ -78,3 +78,35 @@ def test_task_status_setter(status, exp_status):
     """Test valid and invalid statuses, as well as edge cases and string case handling"""
     task = Task(title="Title", status=status)
     assert task.status == exp_status
+
+
+def test_task_str_method():
+    """Test the string representation of a task"""
+    title = "Title"
+    description = "Description"
+    due_date = datetime.now()
+    status = "Completed"
+    task = Task(title=title, description=description, due_date=due_date, status=status)
+    task_id = task.task_id
+    expected_str = f"{title} (ID #{task_id})"
+
+    assert str(task) == expected_str
+
+
+def test_task_repr_method():
+    """Test the full representation of a task"""
+    title = "Title"
+    description = "Description"
+    due_date = datetime.now()
+    status = "Completed"
+    task = Task(title=title, description=description, due_date=due_date, status=status)
+    task_id = task.task_id
+    expected_str = (
+        f'<Task: task_id="{task_id}", '
+        f'title="{title}", '
+        f'description="{description}", '
+        f"due_date={due_date.strftime("%Y-%m-%d %H:%M")}, "
+        f'status="{status}">'
+    )
+
+    assert f"{task!r}" == expected_str
