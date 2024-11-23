@@ -11,10 +11,10 @@ assignees: ''
 <!-- Provide a clear and concise description of what has been changed -->
 
 **Type of Change:** <!-- Select one -->
-- **New Feature** ✨
-- **Bug Fix** 🐞
+- **New Feature** 🌱
+- **Bug Fix** 🐛
 - **Code Cleanup/Refactor** 🛠️
-- **Documentation Update** 📖
+- **Documentation Update** 📒
 
 ---
 
