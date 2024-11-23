@@ -61,6 +61,7 @@ class TaskManager:
     Methods:
         add_task: Add a `Task` obj to the list if is not already in the list.
         get_task: Return the `Task` obj in the list with the matching `task_id`.
+        get_all_tasks: Return the entire task list.
         delete_task: Remove a `Task` obj from the task list if it is present.
     """
 
