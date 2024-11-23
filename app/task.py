@@ -118,7 +118,7 @@ class Task:
         """Return a user-friendly string representation of the task.
 
         The string includes the task's title and ID in the format:
-        "<title> (ID #<task_id>)".
+            "<title> (ID #<task_id>)".
 
         Returns:
             str: A readable representation of the task.
@@ -128,9 +128,9 @@ class Task:
     def __repr__(self):
         """Return a string representation of the task with a complete list of its attributes.
 
-        The string includes the task's title and ID in the format:
-        <Task: task_id="<task_id>", title="<task_title>", description="<description>",
-        due_date=<due_date>, status="<status>">
+        The string includes the complete task attributes in the format:
+            <Task: task_id="<task_id>", title="<task_title>", description="<description>",
+            due_date=<due_date>, status="<status>">
 
         Returns:
             str: A complete representation of the task.
