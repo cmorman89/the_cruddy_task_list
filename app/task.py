@@ -28,7 +28,7 @@ class BlankTitleError(TaskError):
     """
 
     def __init__(self, task_id: int):
-        super().__init__("Task name cannot be blank for task ID #{task_id}.")
+        super().__init__(f"Task name cannot be blank for task ID #{task_id}.")
         self.task_id = task_id
 
 class Task:
