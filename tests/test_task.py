@@ -6,7 +6,7 @@ from datetime import datetime
 
 import pytest
 
-from app.task import Task
+from app.task import Task, TaskError, BlankTitleError
 
 
 @pytest.mark.parametrize(
@@ -54,6 +54,42 @@ def test_task_id_immutable():
         task.task_id = 1
     except AttributeError:
         assert True
+
+
+def test_task_title_setter():
+    """Test attempting to construct and then set a task title to valid and invalid titles."""
+    valid_task_titles = [
+        "Title",
+        "1234",
+        "1",
+        "a",
+        "A longer title with some punctuation.",
+    ]
+    invalid_task_titles = [None, "", "     ", "\n", "\t"]
+
+    for valid_title in valid_task_titles:
+        # Test valid title via constructor
+        task = Task(title=valid_title)
+        assert task.title == valid_title
+
+        # Test valid title via setter
+        task = Task(title="Title")
+        task.title = valid_title
+        assert task.title == valid_title
+
+    for invalid_title in invalid_task_titles:
+        # Test invalid title via constructor
+        print(invalid_title)
+        with pytest.raises(TaskError) as e:
+            task = Task(title=invalid_title)
+            print(f"Invalid Title={invalid_title}, task={task}")
+        assert isinstance(e.value, BlankTitleError)
+
+        # Test invalid title via setter
+        task = Task(title="Title")
+        with pytest.raises(TaskError) as e:
+            task.title = invalid_title
+        assert isinstance(e.value, BlankTitleError)
 
 
 @pytest.mark.parametrize(
