@@ -6,13 +6,30 @@ object has a unique ID number by using the utility class `TaskID` and its `gener
 
 Classes:
     Task: Responsible for holding task-related information such as an ID, title, due date, etc.
+    TaskError: Base `Exception` for all `Task`-related errors.
+    BlankTitleError: Raise when attempting ot set a title to None or a blank/empty string.
 """
 
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 from app.task_id import TaskID
 
+
+class TaskError(Exception):
+    """Base Exception for all Task-related errors."""
+
+
+class BlankTitleError(TaskError):
+    """Raise when attempting to set a title to None or a blank/empty string.
+
+    Attributes:
+        task_id (int): The ID of the task that raised the exception.
+    """
+
+    def __init__(self, task_id: int):
+        super().__init__("Task name cannot be blank for task ID #{task_id}.")
+        self.task_id = task_id
 
 class Task:
     """Responsible for holding task-related information such as an ID, title, due date, etc.
@@ -65,6 +82,26 @@ class Task:
             int: The ID number of this task.
         """
         return self._task_id
+
+    @property
+    def title(self) -> str:
+        """Return the title of the task."""
+        return self._title
+
+    @title.setter
+    def title(self, new_title: str):
+        """Set the title of the task to a valid, non-empty string.
+
+        Args:
+            new_title (str): The new title of the task
+
+        Raises:
+            BlankTitleError: If `None` or a blank/empty string is passed.
+        """
+        if new_title is None or new_title.strip() == "":
+            raise BlankTitleError(task_id=self.task_id)
+        else:
+            self._title = new_title
 
     @property
     def status(self) -> str:
