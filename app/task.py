@@ -38,9 +38,9 @@ class InvalidStatusError(TaskError):
     """Raise when attempting to set a status that is not in the list of valid statuses.
 
     Attributes:
-        task_id: The ID of the task that raised the exception.
-        attempted_status: The invalid status attempted by the user.
-        valid_statuses: The list of valid statuses that may be set.
+        task_id (int): The ID of the task that raised the exception.
+        attempted_status (str): The invalid status attempted by the user.
+        valid_statuses List[str]: The list of valid statuses that may be set.
     """
 
     def __init__(self, task_id: int, attempted_status: str, valid_statuses: List[str]):
@@ -58,9 +58,9 @@ class Task:
     Attributes:
         task_id (int): The unique ID of the task, automatically generated using
             `TaskID.generate()` during instantiation. Immutable once set.
-        title (str): A short title or description of the task. Must not be blank or `None.
+        title (str): A short title or description of the task. Must not be blank or `None`.
         description (Optional[str], optional): A longer description of the task details. Defaults
-            to None.
+            to `None`.
         status (str): The current status of the task. Must be set as "Pending", "In Progress", or
             "Completed". Defaults to "Pending".
         due_date (Optional[datetime], optional): The due date of the task. Defaults to the current
