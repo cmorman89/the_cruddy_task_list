@@ -8,6 +8,8 @@ Classes:
     Task: Responsible for holding task-related information such as an ID, title, due date, etc.
     TaskError: Base `Exception` for all `Task`-related errors.
     BlankTitleError: Raise when attempting ot set a title to None or a blank/empty string.
+    InvalidStatusError: Raise when attempting to set a status that is not in the list of valid
+        statues.
 """
 
 from typing import Optional, List
@@ -31,23 +33,38 @@ class BlankTitleError(TaskError):
         super().__init__(f"Task name cannot be blank for task ID #{task_id}.")
         self.task_id = task_id
 
+
+class InvalidStatusError(TaskError):
+    """Raise when attempting to set a status that is not in the list of valid statuses.
+
+    Attributes:
+        task_id: The ID of the task that raised the exception.
+        attempted_status: The invalid status attempted by the user.
+        valid_statuses: The list of valid statuses that may be set.
+    """
+
+    def __init__(self, task_id: int, attempted_status: str, valid_statuses: List[str]):
+        super().__init__(
+            f'Unable to set status to "{attempted_status}" for task ID #{task_id}. '
+            f"Valid options are {valid_statuses}."
+        )
+        self.attempted_status = attempted_status
+        self.valid_statuses = valid_statuses
+
+
 class Task:
     """Responsible for holding task-related information such as an ID, title, due date, etc.
 
     Attributes:
         task_id (int): The unique ID of the task, automatically generated using
             `TaskID.generate()` during instantiation. Immutable once set.
-        title (str): A short title or description of the task.
+        title (str): A short title or description of the task. Must not be blank or `None.
         description (Optional[str], optional): A longer description of the task details. Defaults
             to None.
         status (str): The current status of the task. Must be set as "Pending", "In Progress", or
             "Completed". Defaults to "Pending".
         due_date (Optional[datetime], optional): The due date of the task. Defaults to the current
             date/time.
-
-    Methods:
-        _validate_status: Validate the status field to ensure it is one of the allowed status
-            options.
     """
 
     def __init__(
@@ -61,7 +78,7 @@ class Task:
         date.
 
         Args:
-            title (str): A short title or description of the task.
+            title (str): A short title or description of the task. Must not be blank or `None.
             description (Optional[str], optional): A longer description of the task details.
                 Defaults to None.
             due_date (Optional[datetime], optional): The due date of the task. Defaults to None.
@@ -114,41 +131,28 @@ class Task:
 
     @status.setter
     def status(self, new_status: str):
-        """Set the task status if valid, or prints an error and sets as "Pending" if invalid.
+        """Validates and sets the `status` attribute.
 
         Args:
-            new_status (str): The unvalidated new status for the task.
-        """
-        try:
-            self._status = self._validate_status(new_status)
-        except ValueError as status_error:
-            print(f"{status_error}")
-            self._status = "Pending"
-
-    @staticmethod
-    def _validate_status(new_status: str) -> str:
-        """Validate the status field to ensure it is one of the allowed status options.
-
-        Args:
-            new_status (str): The new status to validate and return.
+            new_status (str): The new status to validate and set.
 
         Raises:
-            ValueError: If the `new_status` is not in `valid_statuses`.
-
-        Returns:
-            str: The validated task status.
+            InvalidStatusError: If the `new_status` is not in `valid_statuses`.
         """
+
         valid_statuses = ["Pending", "In Progress", "Completed"]
-        new_status = "(empty)" if not new_status else new_status
-        if new_status.lower() in map(str.lower, valid_statuses):
-            return next(
+
+        if f"{new_status}".lower() in map(str.lower, valid_statuses):
+            self._status = next(
                 status
                 for status in valid_statuses
                 if status.lower() == new_status.lower()
             )
         else:
-            raise ValueError(
-                f"Unable to set status to {new_status}. Valid options are {valid_statuses}."
+            raise InvalidStatusError(
+                task_id=self.task_id,
+                attempted_status=new_status,
+                valid_statuses=valid_statuses,
             )
 
     def __str__(self):
