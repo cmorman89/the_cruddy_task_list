@@ -107,8 +107,10 @@ def test_task_title_setter():
 def test_task_valid_status_setter(test_status):
     """Test valid status and case variations"""
     task = Task(title="Title")
-    task.status = test_status
-    assert task.status == test_status
+    status_cases = [test_status, test_status.upper(), test_status.lower()]
+    for status in status_cases:
+        task.status = status
+        assert task.status == test_status
 
 
 @pytest.mark.parametrize(
