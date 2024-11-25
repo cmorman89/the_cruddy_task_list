@@ -6,7 +6,7 @@ from datetime import datetime
 
 import pytest
 
-from app.task import Task, TaskError, BlankTitleError
+from app.task import Task, TaskError, BlankTitleError, InvalidStatusError
 
 
 @pytest.mark.parametrize(
@@ -27,7 +27,11 @@ def test_task_construction(
     title, description, due_date, status, exp_due_date, exp_status
 ):
     """Test basic `Task` construction, including minimal and full arguments provided"""
-    task = Task(title=title, description=description, due_date=due_date, status=status)
+    task = (
+        Task(title=title, description=description, due_date=due_date, status=status)
+        if status is not None
+        else Task(title=title)
+    )
     assert task.task_id >= 0
     assert task.title == title
     assert task.description == description if description else task.description is None
@@ -93,27 +97,39 @@ def test_task_title_setter():
 
 
 @pytest.mark.parametrize(
-    "status, exp_status",
+    "test_status",
     [
-        (None, "Pending"),
-        ("Pending", "Pending"),
-        ("Completed", "Completed"),
-        ("In Progress", "In Progress"),
-        ("Pending".lower(), "Pending"),
-        ("Completed".lower(), "Completed"),
-        ("In Progress".lower(), "In Progress"),
-        ("Pending".upper(), "Pending"),
-        ("Completed".upper(), "Completed"),
-        ("In Progress".upper(), "In Progress"),
-        ("", "Pending"),
-        ("Finished", "Pending"),
-        ("Incomplete", "Pending"),
+        ("Pending"),
+        ("Completed"),
+        ("In Progress"),
     ],
 )
-def test_task_status_setter(status, exp_status):
+def test_task_valid_status_setter(test_status):
+    """Test valid status and case variations"""
+    task = Task(title="Title")
+    status_cases = [test_status, test_status.upper(), test_status.lower()]
+    for status in status_cases:
+        task.status = status
+        assert task.status == test_status
+
+
+@pytest.mark.parametrize(
+    "test_status",
+    [
+        (None),
+        (""),
+        ("Finished"),
+        ("Incomplete"),
+        ("\n")
+    ],
+)
+def test_task_invalid_status_setter(test_status):
     """Test valid and invalid statuses, as well as edge cases and string case handling"""
-    task = Task(title="Title", status=status)
-    assert task.status == exp_status
+
+    task = Task(title="Title")
+    with pytest.raises(TaskError) as e:
+        task.status = test_status
+    assert isinstance(e.value, InvalidStatusError)
 
 
 def test_task_str_method():
