@@ -1,3 +1,7 @@
+"""
+Task List Testing Module
+"""
+
 import pytest
 
 from app.task import Task
@@ -15,23 +19,23 @@ def test_task_list_constructor():
     task_list = TaskList()
     assert not task_list.task_list
 
-    task_list = [Task("task 1"), Task("task 2"), Task("task 3")]
-    task_list = TaskList(task_list=task_list)
-    assert task_list.task_list == task_list
+    list_of_tasks = [Task("task 1"), Task("task 2"), Task("task 3")]
+    task_list = TaskList(task_list=list_of_tasks)
+    assert task_list.task_list == list_of_tasks
 
 
 def test_add_task():
     """Test adding multiple new (valid) and duplicate (invalid) tasks."""
     task_list = TaskList()
-    task_list = [Task("task 1"), Task("task 2"), Task("task 3")]
+    list_of_tasks = [Task("task 1"), Task("task 2"), Task("task 3")]
 
     # Add the tasks the first time
-    for task in task_list:
+    for task in list_of_tasks:
         task_list.add_task(task)
-    assert task_list.task_list == task_list
+    assert task_list.task_list == list_of_tasks
 
     # Try adding them again (error state)
-    for task in task_list:
+    for task in list_of_tasks:
         with pytest.raises(TaskListError) as e:
             task_list.add_task(task)
         assert isinstance(e.value, AddDuplicateTaskError)
@@ -42,8 +46,8 @@ def test_get_task():
     the list is empty (invalid).
     """
     task_list = TaskList()
-    task_list = [Task("task 1"), Task("task 2"), Task("task 3")]
-    valid_id = task_list[0].task_id
+    list_of_tasks = [Task("task 1"), Task("task 2"), Task("task 3")]
+    valid_id = list_of_tasks[0].task_id
     invalid_id = Task("Not Added").task_id
 
     # Try to get a task from an empty list (error state)
@@ -55,7 +59,7 @@ def test_get_task():
     assert isinstance(e.value, EmptyTaskListError)
 
     # Get an existing task from the list.
-    task_list = TaskList(task_list=task_list)
+    task_list = TaskList(task_list=list_of_tasks)
     assert task_list.get_task(valid_id).task_id == valid_id
 
     # Try to get a task that does not exist in the list.
@@ -69,9 +73,9 @@ def test_get_all_tasks():
     task_list = TaskList()
     assert not task_list.get_all_tasks()
 
-    task_list = [Task("task 1"), Task("task 2"), Task("task 3")]
-    task_list = TaskList(task_list=task_list)
-    assert task_list.get_all_tasks() == task_list
+    list_of_tasks = [Task("task 1"), Task("task 2"), Task("task 3")]
+    task_list = TaskList(task_list=list_of_tasks)
+    assert task_list.get_all_tasks() == list_of_tasks
 
 
 def test_delete_task():
@@ -79,9 +83,9 @@ def test_delete_task():
     the list is empty (invalid).
     """
     task_list = TaskList()
-    task_list = [Task("task 1"), Task("task 2"), Task("task 3")]
-    valid_task = task_list[-1]
-    valid_id = task_list[0].task_id
+    list_of_tasks = [Task("task 1"), Task("task 2"), Task("task 3")]
+    valid_task = list_of_tasks[-1]
+    valid_id = list_of_tasks[0].task_id
     invalid_task = Task("Not Added")
     invalid_id = invalid_task.task_id
 
@@ -95,7 +99,7 @@ def test_delete_task():
     assert isinstance(e.value, EmptyTaskListError)
 
     # Delete an existing task from the list by ID and by a `Task` object
-    task_list = TaskList(task_list=task_list)
+    task_list = TaskList(task_list=list_of_tasks)
     task_list.delete_task(task=valid_id)
     task_list.delete_task(task=valid_task)
 
