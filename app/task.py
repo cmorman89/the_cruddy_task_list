@@ -22,6 +22,18 @@ class TaskError(Exception):
     """Base Exception for all Task-related errors."""
 
 
+class TaskTitleError(TaskError):
+    """Raise when attempting to set a title to None or a blank/empty string.
+
+    Attributes:
+        task_id (int): The ID of the task that raised the exception.
+    """
+
+    def __init__(self, task_id: int):
+        super().__init__(f"Task name cannot be blank for task ID #{task_id}.")
+        self.task_id = task_id
+
+
 class BlankTitleError(TaskError):
     """Raise when attempting to set a title to None or a blank/empty string.
 
@@ -107,18 +119,35 @@ class Task:
 
     @title.setter
     def title(self, new_title: str):
-        """Set the title of the task to a valid, non-empty string.
+        """Validates and then sets the task's title.
 
         Args:
             new_title (str): The new title of the task
 
         Raises:
-            BlankTitleError: If `None` or a blank/empty string is passed.
+            TaskTitleError: If the title fails validation before being set.
         """
-        if new_title is None or new_title.strip() == "":
-            raise BlankTitleError(task_id=self.task_id)
-        else:
-            self._title = new_title
+        if not self.validate_title(new_title):
+            raise TaskTitleError
+        self._title = new_title
+
+    @staticmethod
+    def validate_title(new_title: str) -> bool:
+        """Validate that the title is meaningful.
+
+         A meaningful title must be a non-empty string with at least one printable
+         character.
+
+        Args:
+            new_title (str): The new title to validate.
+
+        Returns:
+            bool: `True` if valid; `False` if invalid.
+        """
+        if isinstance(new_title, str):
+            if new_title.strip() > 0:
+                return True
+        return False
 
     @property
     def status(self) -> str:
