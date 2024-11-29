@@ -6,20 +6,20 @@ from datetime import datetime
 
 import pytest
 
-from app.task import Task, TaskError, BlankTitleError, InvalidStatusError
+from app.task import Task, TaskError, InvalidTaskTitleError, InvalidTaskStatusError
 
 
 @pytest.mark.parametrize(
     "title, description, due_date, status, exp_due_date, exp_status",
     [
-        ("Task Title", None, None, None, "", "Pending"),
+        ("Task Title", None, None, None, "", "pending"),
         (
             "Task Title",
             "The longer description of the task.",
             datetime(2024, 12, 31),
-            "Completed",
+            "completed",
             datetime(2024, 12, 31),
-            "Completed",
+            "completed",
         ),
     ],
 )
@@ -87,21 +87,21 @@ def test_task_title_setter():
         with pytest.raises(TaskError) as e:
             task = Task(title=invalid_title)
             print(f"Invalid Title={invalid_title}, task={task}")
-        assert isinstance(e.value, BlankTitleError)
+        assert isinstance(e.value, InvalidTaskTitleError)
 
         # Test invalid title via setter
         task = Task(title="Title")
         with pytest.raises(TaskError) as e:
             task.title = invalid_title
-        assert isinstance(e.value, BlankTitleError)
+        assert isinstance(e.value, InvalidTaskTitleError)
 
 
 @pytest.mark.parametrize(
     "test_status",
     [
-        ("Pending"),
-        ("Completed"),
-        ("In Progress"),
+        ("pending"),
+        ("completed"),
+        ("in progress"),
     ],
 )
 def test_task_valid_status_setter(test_status):
@@ -115,13 +115,7 @@ def test_task_valid_status_setter(test_status):
 
 @pytest.mark.parametrize(
     "test_status",
-    [
-        (None),
-        (""),
-        ("Finished"),
-        ("Incomplete"),
-        ("\n")
-    ],
+    [(None), (""), ("Finished"), ("Incomplete"), ("\n")],
 )
 def test_task_invalid_status_setter(test_status):
     """Test valid and invalid statuses, as well as edge cases and string case handling"""
@@ -129,7 +123,7 @@ def test_task_invalid_status_setter(test_status):
     task = Task(title="Title")
     with pytest.raises(TaskError) as e:
         task.status = test_status
-    assert isinstance(e.value, InvalidStatusError)
+    assert isinstance(e.value, InvalidTaskStatusError)
 
 
 def test_task_str_method():
@@ -150,7 +144,7 @@ def test_task_repr_method():
     title = "Title"
     description = "Description"
     due_date = datetime.now()
-    status = "Completed"
+    status = "completed"
     task = Task(title=title, description=description, due_date=due_date, status=status)
     task_id = task.task_id
     expected_str = (

@@ -22,7 +22,7 @@ class TaskError(Exception):
     """Base Exception for all Task-related errors."""
 
 
-class TaskTitleError(TaskError):
+class InvalidTaskTitleError(TaskError):
     """Raise when attempting to set a title to None or a blank/empty string.
 
     Attributes:
@@ -34,19 +34,7 @@ class TaskTitleError(TaskError):
         self.task_id = task_id
 
 
-class BlankTitleError(TaskError):
-    """Raise when attempting to set a title to None or a blank/empty string.
-
-    Attributes:
-        task_id (int): The ID of the task that raised the exception.
-    """
-
-    def __init__(self, task_id: int):
-        super().__init__(f"Task name cannot be blank for task ID #{task_id}.")
-        self.task_id = task_id
-
-
-class InvalidStatusError(TaskError):
+class InvalidTaskStatusError(TaskError):
     """Raise when attempting to set a status that is not in the list of valid statuses.
 
     Attributes:
@@ -68,6 +56,7 @@ class Task:
     """Responsible for holding task-related information such as an ID, title, due date, etc.
 
     Attributes:
+        VALID_STATUSES (List[str]): A complete list of valid `status` strings.
         task_id (int): The unique ID of the task, automatically generated using
             `TaskID.generate()` during instantiation. Immutable once set.
         title (str): A short title or description of the task. Must not be blank or `None`.
@@ -79,12 +68,14 @@ class Task:
             date/time.
     """
 
+    VALID_STATUSES = ["pending", "in progress", "completed"]
+
     def __init__(
         self,
         title: str,
         description: Optional[str] = None,
         due_date: Optional[datetime] = None,
-        status: Optional[str] = "Pending",
+        status: Optional[str] = "pending",
     ):
         """Construct a task with requested args and ensures it has a valid ID, status, and due
         date.
@@ -127,8 +118,8 @@ class Task:
         Raises:
             TaskTitleError: If the title fails validation before being set.
         """
-        if not self.validate_title(new_title):
-            raise TaskTitleError
+        if not self.validate_title(new_title=new_title):
+            raise InvalidTaskTitleError(self.task_id)
         self._title = new_title
 
     @staticmethod
@@ -144,10 +135,7 @@ class Task:
         Returns:
             bool: `True` if valid; `False` if invalid.
         """
-        if isinstance(new_title, str):
-            if new_title.strip() > 0:
-                return True
-        return False
+        return True if isinstance(new_title, str) and new_title.strip() else False
 
     @property
     def status(self) -> str:
@@ -166,23 +154,19 @@ class Task:
             new_status (str): The new status to validate and set.
 
         Raises:
-            InvalidStatusError: If the `new_status` is not in `valid_statuses`.
+            InvalidTaskStatusError: If the `new_status` is not in `valid_statuses`.
         """
+        if not self.validate_status(new_status=new_status):
+            raise InvalidTaskStatusError(self.task_id, new_status, Task.VALID_STATUSES)
+        self._status = new_status.lower()
 
-        valid_statuses = ["Pending", "In Progress", "Completed"]
-
-        if f"{new_status}".lower() in map(str.lower, valid_statuses):
-            self._status = next(
-                status
-                for status in valid_statuses
-                if status.lower() == new_status.lower()
-            )
-        else:
-            raise InvalidStatusError(
-                task_id=self.task_id,
-                attempted_status=new_status,
-                valid_statuses=valid_statuses,
-            )
+    @staticmethod
+    def validate_status(new_status: str):
+        return (
+            True
+            if isinstance(new_status, str) and new_status.lower() in Task.VALID_STATUSES
+            else False
+        )
 
     def __str__(self):
         """Return a user-friendly string representation of the task.
