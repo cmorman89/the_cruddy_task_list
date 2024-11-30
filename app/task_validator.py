@@ -82,20 +82,26 @@ class TaskValidator:
     def validate_due_date(new_due_date: str | datetime):
         """Validate that the due date is a `datetime` object or a formatted string.
 
-        The string format is M/D/YYYY with or without leading zeroes. Year must be all four digits.
+        The string format is _M/_D/YYYY with/without leading zeroes. Year must be all four digits.
 
         Args:
             new_status (str): The new status to validate.
 
         Returns:
             bool: `True` if valid; `False` if invalid.
+
+        Note:
+            Use `elif` to match more regex patterns.
         """
-        return (
-            True
-            if isinstance(new_due_date, datetime)
-            or (
-                isinstance(new_due_date, str)
-                and re.match(r"\d{1,2}\/\d{1,2}\/\d{4}", new_due_date)
-            )
-            else False
-        )
+
+        if isinstance(new_due_date, datetime):
+            return True
+        elif isinstance(new_due_date, str) and re.match(
+            r"\d{1,2}\/\d{1,2}\/\d{4}", new_due_date
+        ):
+            try:
+                datetime.strptime(new_due_date, "%m/%d/%Y")
+                return True
+            except ValueError:
+                return False
+        return False
