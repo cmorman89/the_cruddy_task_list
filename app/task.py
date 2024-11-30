@@ -12,10 +12,11 @@ Classes:
         statues.
 """
 
-from typing import Optional, List
+from typing import Optional
 from datetime import datetime
 
 from app.task_id import TaskID
+from app.task_validator import TaskValidator
 
 
 class TaskError(Exception):
@@ -40,10 +41,10 @@ class InvalidTaskStatusError(TaskError):
     Attributes:
         task_id (int): The ID of the task that raised the exception.
         attempted_status (str): The invalid status attempted by the user.
-        valid_statuses List[str]: The list of valid statuses that may be set.
     """
 
-    def __init__(self, task_id: int, attempted_status: str, valid_statuses: List[str]):
+    def __init__(self, task_id: int, attempted_status: str):
+        valid_statuses = TaskValidator.VALID_STATUSES
         super().__init__(
             f'Unable to set status to "{attempted_status}" for task ID #{task_id}. '
             f"Valid options are {valid_statuses}."
@@ -52,23 +53,32 @@ class InvalidTaskStatusError(TaskError):
         self.valid_statuses = valid_statuses
 
 
+class InvalidTaskDueDateError(TaskError):
+    """Raise when attempting to set a due date to an unparsable string or non-`datetime` object.
+
+    Attributes:
+        new_due_date (str | datetime): The due date user input that failed validation
+    """
+
+    def __init__(self, task_id: int, new_due_date: str | datetime):
+        super().__init__(f'Invalid date "{new_due_date}" for task ID #{task_id}.')
+        self.new_due_date = new_due_date
+
+
 class Task:
     """Responsible for holding task-related information such as an ID, title, due date, etc.
 
     Attributes:
-        VALID_STATUSES (List[str]): A complete list of valid `status` strings.
         task_id (int): The unique ID of the task, automatically generated using
             `TaskID.generate()` during instantiation. Immutable once set.
         title (str): A short title or description of the task. Must not be blank or `None`.
         description (Optional[str], optional): A longer description of the task details. Defaults
             to `None`.
-        status (str): The current status of the task. Must be set as "Pending", "In Progress", or
-            "Completed". Defaults to "Pending".
+        status (str): The current status of the task. Must be set as "pending", "in progress", or
+            "completed". Defaults to "pending".
         due_date (Optional[datetime], optional): The due date of the task. Defaults to the current
             date/time.
     """
-
-    VALID_STATUSES = ["pending", "in progress", "completed"]
 
     def __init__(
         self,
@@ -85,14 +95,18 @@ class Task:
             description (Optional[str], optional): A longer description of the task details.
                 Defaults to None.
             due_date (Optional[datetime], optional): The due date of the task. Defaults to None.
-            status (str): The current status of the task. Must be set as "Pending", "In Progress",
-                or "Completed". Defaults to "Pending".
+            status (str): The current status of the task. Must be set as "pending", "in progress",
+            or "completed". Defaults to "pending".
         """
         self._task_id: int = TaskID.generate()
-        self.title: str = title
+        self._title: str
+        self._due_date: datetime
+        self._status: str
+
+        self.title = title
         self.description: Optional[str] = description
-        self.due_date: datetime = due_date if due_date else datetime.now()
-        self.status: str = status
+        self.due_date = due_date if due_date else datetime.now()
+        self.status = status if status else "pending"
 
     @property
     def task_id(self) -> int:
@@ -105,12 +119,16 @@ class Task:
 
     @property
     def title(self) -> str:
-        """Return the title of the task."""
+        """Return the title of the task.
+
+        Returns:
+            str: The task's title.
+        """
         return self._title
 
     @title.setter
     def title(self, new_title: str):
-        """Validates and then sets the task's title.
+        """Validate and then set the task's title.
 
         Args:
             new_title (str): The new title of the task
@@ -118,24 +136,9 @@ class Task:
         Raises:
             TaskTitleError: If the title fails validation before being set.
         """
-        if not self.validate_title(new_title=new_title):
+        if not TaskValidator.validate_title(new_title=new_title):
             raise InvalidTaskTitleError(self.task_id)
         self._title = new_title
-
-    @staticmethod
-    def validate_title(new_title: str) -> bool:
-        """Validate that the title is meaningful.
-
-         A meaningful title must be a non-empty string with at least one printable
-         character.
-
-        Args:
-            new_title (str): The new title to validate.
-
-        Returns:
-            bool: `True` if valid; `False` if invalid.
-        """
-        return True if isinstance(new_title, str) and new_title.strip() else False
 
     @property
     def status(self) -> str:
@@ -148,24 +151,43 @@ class Task:
 
     @status.setter
     def status(self, new_status: str):
-        """Validates and sets the `status` attribute.
+        """Validates and sets the task's status.
 
         Args:
             new_status (str): The new status to validate and set.
 
         Raises:
-            InvalidTaskStatusError: If the `new_status` is not in `valid_statuses`.
+            InvalidTaskStatusError: If the new status fails validation before being set.
         """
-        if not self.validate_status(new_status=new_status):
-            raise InvalidTaskStatusError(self.task_id, new_status, Task.VALID_STATUSES)
+        if not TaskValidator.validate_status(new_status=new_status):
+            raise InvalidTaskStatusError(self.task_id, new_status)
         self._status = new_status.lower()
 
-    @staticmethod
-    def validate_status(new_status: str):
-        return (
-            True
-            if isinstance(new_status, str) and new_status.lower() in Task.VALID_STATUSES
-            else False
+    @property
+    def due_date(self) -> datetime:
+        """Gets the task's due date.
+
+        Returns:
+            datetime: The task's due date.
+        """
+        return self._due_date
+
+    @due_date.setter
+    def due_date(self, new_due_date: str | datetime):
+        """Validates and sets the task's due date.
+
+        Args:
+            new_due_date (datetime): The new status to validate and set.
+
+        Raises:
+            InvalidTaskDueDateError: If the new due date fails validation before being set.
+        """
+        if not TaskValidator.validate_due_date(new_due_date=new_due_date):
+            raise InvalidTaskDueDateError(self.task_id, str(new_due_date))
+        self._due_date = (
+            new_due_date
+            if isinstance(new_due_date, datetime)
+            else datetime.strptime(new_due_date, "%m/%d/%Y")
         )
 
     def __str__(self):
