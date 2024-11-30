@@ -6,20 +6,26 @@ from datetime import datetime
 
 import pytest
 
-from app.task import Task, TaskError, BlankTitleError, InvalidStatusError
+from app.task import (
+    InvalidTaskDueDateError,
+    Task,
+    TaskError,
+    InvalidTaskTitleError,
+    InvalidTaskStatusError,
+)
 
 
 @pytest.mark.parametrize(
     "title, description, due_date, status, exp_due_date, exp_status",
     [
-        ("Task Title", None, None, None, "", "Pending"),
+        ("Task Title", None, None, None, "", "pending"),
         (
             "Task Title",
             "The longer description of the task.",
             datetime(2024, 12, 31),
-            "Completed",
+            "completed",
             datetime(2024, 12, 31),
-            "Completed",
+            "completed",
         ),
     ],
 )
@@ -60,48 +66,55 @@ def test_task_id_immutable():
         assert True
 
 
-def test_task_title_setter():
-    """Test attempting to construct and then set a task title to valid and invalid titles."""
-    valid_task_titles = [
+@pytest.mark.parametrize(
+    "valid_title",
+    [
         "Title",
         "1234",
         "1",
         "a",
         "A longer title with some punctuation.",
-    ]
-    invalid_task_titles = [None, "", "     ", "\n", "\t"]
+    ],
+)
+def test_task_valid_title_setter(valid_title):
+    """Test attempting to construct and then set a task title to valid and invalid titles."""
 
-    for valid_title in valid_task_titles:
-        # Test valid title via constructor
-        task = Task(title=valid_title)
-        assert task.title == valid_title
+    # Test valid title via constructor
+    task = Task(title=valid_title)
+    assert task.title == valid_title
 
-        # Test valid title via setter
-        task = Task(title="Title")
-        task.title = valid_title
-        assert task.title == valid_title
+    # Test valid title via setter
+    task = Task(title="Title")
+    task.title = valid_title
+    assert task.title == valid_title
 
-    for invalid_title in invalid_task_titles:
-        # Test invalid title via constructor
-        print(invalid_title)
-        with pytest.raises(TaskError) as e:
-            task = Task(title=invalid_title)
-            print(f"Invalid Title={invalid_title}, task={task}")
-        assert isinstance(e.value, BlankTitleError)
 
-        # Test invalid title via setter
-        task = Task(title="Title")
-        with pytest.raises(TaskError) as e:
-            task.title = invalid_title
-        assert isinstance(e.value, BlankTitleError)
+@pytest.mark.parametrize(
+    "invalid_title",
+    [None, "", "     ", "\n", "\t"],
+)
+def test_task_invalid_title_setter(invalid_title):
+    """Test attempting to construct and then set a task title to valid and invalid titles."""
+
+    # Test invalid title via constructor
+    with pytest.raises(TaskError) as e:
+        task = Task(title=invalid_title)
+        print(f"Invalid Title={invalid_title}, task={task}")
+    assert isinstance(e.value, InvalidTaskTitleError)
+
+    # Test invalid title via setter
+    task = Task(title="Title")
+    with pytest.raises(TaskError) as e:
+        task.title = invalid_title
+    assert isinstance(e.value, InvalidTaskTitleError)
 
 
 @pytest.mark.parametrize(
     "test_status",
     [
-        ("Pending"),
-        ("Completed"),
-        ("In Progress"),
+        ("pending"),
+        ("completed"),
+        ("in progress"),
     ],
 )
 def test_task_valid_status_setter(test_status):
@@ -115,13 +128,7 @@ def test_task_valid_status_setter(test_status):
 
 @pytest.mark.parametrize(
     "test_status",
-    [
-        (None),
-        (""),
-        ("Finished"),
-        ("Incomplete"),
-        ("\n")
-    ],
+    [(None), (""), ("Finished"), ("Incomplete"), ("\n")],
 )
 def test_task_invalid_status_setter(test_status):
     """Test valid and invalid statuses, as well as edge cases and string case handling"""
@@ -129,7 +136,44 @@ def test_task_invalid_status_setter(test_status):
     task = Task(title="Title")
     with pytest.raises(TaskError) as e:
         task.status = test_status
-    assert isinstance(e.value, InvalidStatusError)
+    assert isinstance(e.value, InvalidTaskStatusError)
+
+
+@pytest.mark.parametrize(
+    "valid_date, expected_date",
+    [
+        (datetime(2024, 1, 1), "01/01/2024"),
+        (datetime(1000, 1, 1), "01/01/1000"),
+        (datetime(3000, 1, 1), "01/01/3000"),
+        ("01/01/2024", "01/01/2024"),
+        ("1/1/2024", "01/01/2024"),
+        ("11/01/2020", "11/01/2020"),
+        ("09/21/2028", "09/21/2028")
+    ]
+)
+def test_task_valid_due_date(valid_date, expected_date):
+    task = Task(title="Title")
+    task.due_date = valid_date
+    assert task.due_date == datetime.strptime(expected_date, "%m/%d/%Y")
+
+
+@pytest.mark.parametrize(
+    "invalid_date",
+    [
+        ("january 1"),
+        ("5, 5, 95"),
+        ("13/12/202"),
+        ("0/1/0"),
+        ("hello"),
+        ("1-1-2024"),
+        ("1/1/9")
+    ]
+)
+def test_task_invalid_due_date(invalid_date):
+    task = Task(title="Title")
+    with pytest.raises(TaskError) as e:
+        task.due_date = invalid_date
+    assert isinstance(e.value, InvalidTaskDueDateError)
 
 
 def test_task_str_method():
@@ -150,7 +194,7 @@ def test_task_repr_method():
     title = "Title"
     description = "Description"
     due_date = datetime.now()
-    status = "Completed"
+    status = "completed"
     task = Task(title=title, description=description, due_date=due_date, status=status)
     task_id = task.task_id
     expected_str = (
