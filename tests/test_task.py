@@ -38,7 +38,7 @@ def test_task_construction(
         if status is not None
         else Task(title=title)
     )
-    assert task.task_id >= 0
+    assert int(task.task_id) >= 0
     assert task.title == title
     assert task.description == description if description else task.description is None
     if due_date:

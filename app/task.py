@@ -69,7 +69,7 @@ class Task:
     """Responsible for holding task-related information such as an ID, title, due date, etc.
 
     Attributes:
-        task_id (int): The unique ID of the task, automatically generated using
+        task_id (str): The unique ID of the task, automatically generated using
             `TaskID.generate()` during instantiation. Immutable once set.
         title (str): A short title or description of the task. Must not be blank or `None`.
         description (Optional[str], optional): A longer description of the task details. Defaults
@@ -98,7 +98,7 @@ class Task:
             status (str): The current status of the task. Must be set as "pending", "in progress",
             or "completed". Defaults to "pending".
         """
-        self._task_id: int = TaskID.generate()
+        self._task_id: str = TaskID.generate()
         self._title: str
         self._due_date: datetime
         self._status: str
@@ -109,11 +109,11 @@ class Task:
         self.status = status if status else "pending"
 
     @property
-    def task_id(self) -> int:
+    def task_id(self) -> str:
         """Safely return the `_task_id` attribute while ensuring immutability.
 
         Returns:
-            int: The ID number of this task.
+            str: The ID number of this task.
         """
         return self._task_id
 
@@ -218,3 +218,13 @@ class Task:
             f"due_date={self.due_date.strftime("%Y-%m-%d %H:%M")}, "
             f'status="{self.status}">'
         )
+
+    def __eq__(self, other):
+        """Check if another object is equal to this Task's id or title if a string. If it is another
+        `Task`, check if both `task_id` match.
+        """
+        if isinstance(other, str):
+            return other == self.task_id or other == self.title
+        elif isinstance(other, Task):
+            return other.task_id == self.task_id
+        return False

@@ -117,7 +117,7 @@ class TaskList:
         """
         return self.task_list
 
-    def delete_task(self, task: Union[int, Task]):
+    def delete_task(self, task: Union[str, Task]):
         """Delete a `Task` from the task list if it is present.
 
         Args:
@@ -129,7 +129,7 @@ class TaskList:
             TaskNotFoundError: if a `Task` with a matching `task_id` value is not found in the
                 task list.
         """
-        task_id = task if isinstance(task, int) else task.task_id
+        task_id = task if isinstance(task, str) else task.task_id
         if self.task_list:
             task = self.get_task(task_id=task_id)
             self.task_list.remove(task)
