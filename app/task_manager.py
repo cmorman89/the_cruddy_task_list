@@ -65,7 +65,7 @@ class TaskManager:
 
     def get_task_by_index(self, task_index: int) -> Optional[Task]:
         try:
-            return self.task_list.get_all_tasks[task_index]
+            return self.task_list.get_all_tasks()[task_index]
         except IndexError as exc:
             print(f"{exc.value}")
             return None
@@ -76,10 +76,8 @@ class TaskManager:
         except TaskListError as exc:
             print(f"{exc.value}")
 
-
     def delete_from_list(self, task: Task):
         try:
             self.task_list.delete_task(task)
         except TaskListError as exc:
             print(f"{exc.value}")
-
