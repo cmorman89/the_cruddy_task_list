@@ -10,7 +10,7 @@ Classes:
 
 
 class TaskID:
-    """Manages and provides a unique ID number for `Task` objects
+    """Manages and provides a unique ID number as a string for `Task` objects
 
     Attributes:
         _last_task_id (int): The internal counter for tracking issued IDs.
@@ -22,11 +22,11 @@ class TaskID:
     _last_task_id: int = -1
 
     @staticmethod
-    def generate() -> int:
+    def generate() -> str:
         """Generates a unique ID by incrementing the `_last_task_id` counter.
 
         Returns:
-            int: The unique ID.
+            str: The unique ID as a string.
         """
         TaskID._last_task_id += 1
-        return TaskID._last_task_id
+        return str(TaskID._last_task_id)
