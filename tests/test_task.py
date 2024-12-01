@@ -148,28 +148,16 @@ def test_task_invalid_status_setter(test_status):
         ("01/01/2024", "01/01/2024"),
         ("1/1/2024", "01/01/2024"),
         ("11/01/2020", "11/01/2020"),
-        ("09/21/2028", "09/21/2028")
-    ]
+        ("09/21/2028", "09/21/2028"),
+    ],
 )
 def test_task_valid_due_date(valid_date, expected_date):
     task = Task(title="Title")
     task.due_date = valid_date
     assert task.due_date == datetime.strptime(expected_date, "%m/%d/%Y")
 
-
-@pytest.mark.parametrize(
-    "invalid_date",
-    [
-        ("january 1"),
-        ("5, 5, 95"),
-        ("13/12/202"),
-        ("0/1/0"),
-        ("hello"),
-        ("1-1-2024"),
-        ("1/1/9")
-    ]
-)
-def test_task_invalid_due_date(invalid_date):
+def test_task_invalid_due_date(invalid_task_due_dates):
+    invalid_date = invalid_task_due_dates
     task = Task(title="Title")
     with pytest.raises(TaskError) as e:
         task.due_date = invalid_date
