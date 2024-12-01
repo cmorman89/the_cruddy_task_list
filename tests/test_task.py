@@ -201,7 +201,7 @@ def test_task_repr_method():
         f'<Task: task_id="{task_id}", '
         f'title="{title}", '
         f'description="{description}", '
-        f"due_date={due_date.strftime("%Y-%m-%d %H:%M")}, "
+        f"due_date={due_date.strftime('%m/%d/%Y')}, "
         f'status="{status}">'
     )
 

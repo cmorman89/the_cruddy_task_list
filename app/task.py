@@ -215,7 +215,7 @@ class Task:
             f'<Task: task_id="{self.task_id}", '
             f'title="{self.title}", '
             f'description="{self.description}", '
-            f"due_date={self.due_date.strftime("%Y-%m-%d %H:%M")}, "
+            f"due_date={self.due_date.strftime('%m/%d/%Y')}, "
             f'status="{self.status}">'
         )
 
