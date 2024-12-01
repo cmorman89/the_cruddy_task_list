@@ -208,13 +208,9 @@ def populated_task_list(list_of_tasks) -> TaskList:
 
 
 @pytest.fixture
-def empty_task_manager(list_of_tasks) -> TaskManager:
+def empty_task_manager(empty_task_list) -> TaskManager:
     """Return a `TaskManager` object, whose held `TaskList` contains no tasks."""
-
-    def _populated_task_manager(count: int = 3):
-        return TaskManager(task_list=TaskList(task_list=list_of_tasks(count)))
-
-    return _populated_task_manager
+    return TaskManager(empty_task_list)
 
 
 @pytest.fixture

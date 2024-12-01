@@ -76,7 +76,7 @@ class TaskManager:
         except TaskListError as exc:
             print(f"{exc.value}")
 
-    def delete_from_list(self, task: Task):
+    def delete_task_from_list(self, task: Task):
         try:
             self.task_list.delete_task(task)
         except TaskListError as exc:
